@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>ZJellyfin.Plugin.CollectionSections</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Jellyfin.Plugin.HomeScreenSections" Version="1.1.0-alpha.5" />
+        <PackageReference Include="Jellyfin.Plugin.Referenceable" Version="1.1.0" />
+    </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="xcopy /y /s &quot;$(TargetDir)&quot; &quot;C:\ProgramData\Jellyfin\Server\plugins\ZCollection Sections_1.0.0&quot;" />
+    </Target>
+</Project>
