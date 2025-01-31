@@ -1,8 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Plugin.CollectionSections.Configuration;
 using Jellyfin.Plugin.CollectionSections.Sections;
+using Jellyfin.Plugin.HomeScreenSections.HomeScreen;
 using Jellyfin.Plugin.HomeScreenSections.HomeScreen.Sections;
 using Jellyfin.Plugin.HomeScreenSections.Library;
 using Jellyfin.Plugin.HomeScreenSections.Model.Dto;
@@ -12,6 +14,7 @@ using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
@@ -44,6 +47,7 @@ public class CollectionSectionPlugin : BasePlugin<PluginConfiguration>, IHasPlug
     private readonly ILibraryManager m_libraryManager;
     private readonly IDtoService m_dtoService;
     private readonly IUserManager m_userManager;
+    private readonly IServiceProvider m_serviceProvider;
 
     public CollectionSectionPlugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, 
         ICollectionManager collectionManager, IPlaylistManager playlistManager, ILibraryManager libraryManager, 
@@ -54,19 +58,87 @@ public class CollectionSectionPlugin : BasePlugin<PluginConfiguration>, IHasPlug
         m_playlistManager = playlistManager;
         m_dtoService = dtoService;
         m_userManager = userManager;
+        m_serviceProvider = serviceProvider;
         
-        IHomeScreenManager? homeScreenManager = serviceProvider.GetService<IHomeScreenManager>();
-        homeScreenManager?.RegisterResultsDelegate(new PluginDefinedSection("Jellyfin_Plugin_CollectionSections_Trending", "Trending", additionalData: "Trending")
-        {
-            OnGetResults = GetResults
-        });
-        homeScreenManager?.RegisterResultsDelegate(new PluginDefinedSection("Jellyfin_Plugin_CollectionSections_MostWatchedWeek", "Most Watched this Week", additionalData: "Most Watched This Week")
-        {
-            OnGetResults = GetResults
-        });
+        ConfigurationChanged += OnConfigurationChanged;
+        
+        OnConfigurationChanged(null, Configuration);
     }
 
-    private QueryResult<BaseItemDto> GetResults(HomeScreenSectionPayload payload)
+    private void OnConfigurationChanged(object? sender, BasePluginConfiguration e)
+    {
+        if (e is PluginConfiguration pluginConfiguration)
+        {
+            IHomeScreenManager homeScreenManager = m_serviceProvider.GetRequiredService<IHomeScreenManager>();
+
+            foreach (SectionsConfig section in pluginConfiguration.Sections)
+            {
+                if (homeScreenManager.GetSectionTypes().Any(x => x.Section == section.UniqueId))
+                {
+                    IHomeScreenSection sectionInstance = homeScreenManager.GetSectionTypes().First(x => x.Section == section.UniqueId);
+
+                    if (sectionInstance is PluginDefinedSection pluginDefinedSection)
+                    {
+                        pluginDefinedSection.DisplayText = section.DisplayText;
+                        pluginDefinedSection.AdditionalData = section.CollectionName;
+
+                        if (section.SectionType == SectionType.Collection)
+                        {
+                            pluginDefinedSection.OnGetResults = GetCollectionResults;
+                        }
+                        else if (section.SectionType == SectionType.Playlist)
+                        {
+                            pluginDefinedSection.OnGetResults = GetPlaylistResults;
+                        }
+                    }
+                }
+                else
+                {
+                    PluginDefinedSection pluginDefinedSection = new PluginDefinedSection(section.UniqueId, section.DisplayText)
+                    {
+                        AdditionalData = section.CollectionName,
+                        OnGetResults = section.SectionType == SectionType.Collection
+                            ? GetCollectionResults
+                            : GetPlaylistResults
+                    };
+                    
+                    homeScreenManager.RegisterResultsDelegate(pluginDefinedSection);
+                }
+            }
+        }
+    }
+
+    private QueryResult<BaseItemDto> GetCollectionResults(HomeScreenSectionPayload payload)
+    {
+        DtoOptions dtoOptions = new DtoOptions
+        {
+            Fields = new[]
+            {
+                ItemFields.PrimaryImageAspectRatio,
+                ItemFields.MediaSourceCount
+            },
+            ImageTypes = new[]
+            {
+                ImageType.Primary,
+                ImageType.Backdrop,
+                ImageType.Banner,
+                ImageType.Thumb
+            },
+            ImageTypeLimit = 1
+        };
+
+        User? user = m_userManager.GetUserById(payload.UserId);
+        BoxSet collection = m_serviceProvider.GetRequiredService<CollectionManagerProxy>().GetCollections(user)
+            .FirstOrDefault(x => x.Name == payload.AdditionalData);
+        
+        List<BaseItem> items =  collection.GetChildren(user, true);
+            
+        items = items.Take(Math.Min(items.Count, 32)).ToList();
+        
+        return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items, dtoOptions));
+    }
+
+    private QueryResult<BaseItemDto> GetPlaylistResults(HomeScreenSectionPayload payload)
     {
         DtoOptions dtoOptions = new DtoOptions
         {
@@ -90,14 +162,30 @@ public class CollectionSectionPlugin : BasePlugin<PluginConfiguration>, IHasPlug
 
         var itemsRaw = playlist.GetManageableItems()
             .Where(i => i.Item2.IsVisible(m_userManager.GetUserById(payload.UserId)));
+
+        var groupedItems = itemsRaw.GroupBy(x =>
+        {
+            if (x.Item2 is Episode episode)
+            {
+                return episode.Series;
+            }
+
+            return x.Item2;
+        });
         
-        var items = itemsRaw.Take(Math.Min(itemsRaw.Count(), 32)).ToArray();
+        var items = groupedItems.Take(Math.Min(groupedItems.Count(), 32)).ToArray();
         
-        return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items.Select(x => x.Item2).ToList(), dtoOptions));
+        return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items.Select(x => x.Key).ToList(), dtoOptions));
     }
 
     public IEnumerable<PluginPageInfo> GetPages()
     {
-        yield break;
+        var prefix = GetType().Namespace;
+
+        yield return new PluginPageInfo
+        {
+            Name = Name,
+            EmbeddedResourcePath = $"{prefix}.Configuration.config.html"
+        };
     }
 }

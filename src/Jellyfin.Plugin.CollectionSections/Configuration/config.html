@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Collection Sections</title>
+</head>
+<body>
+<div data-role="page" id="collectionSectionConfigurationPage" class="page type-interior pluginConfigurationPage fullWidthContent">
+    <div class="content-primary">
+        <div class="verticalSection">
+            <div class="sectionTitleContainer">
+                <h2 class="sectionTitle">Collection Sections</h2>
+                <a is="emby-linkbutton" class="raised raised-mini" style="margin-left: 2em;" target="_blank"
+                   href="https://github.com/IAmParadox27/jellyfin-plugin-collection-sections">
+                    <i class="md-icon button-icon button-icon-left secondaryText"></i>
+                    <span>Help</span>
+                </a>
+            </div>
+        </div>
+        <hr class="solid">
+
+        <form class="artworkConfigurationForm">
+            <div id="configurationWrapper"></div>
+            <button id="btnAddSection" is="emby-button" type="button" class="raised button block">
+                <span>Add new Section</span>
+            </button>
+            <br />
+            <button id="saveConfig" is="emby-button" type="submit" class="raised button-submit block">
+                <span>Save</span>
+            </button>
+        </form>
+    </div>
+
+    <template id="template-repository">
+        <div data-id="repo-config">
+            <div class="inputContainer">
+                <input is="emby-input" type="text" data-id="txtUniqueId" required="required"
+                       label="Unique Identifier" />
+                <span>A unique identifier for this section. Cannot contain spaces, periods or dashes. Underscores are fine.</span>
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" data-id="txtDisplayText" required="required"
+                       label="Display Text:" />
+                <span>The heading that will display on the home screen.</span>
+            </div>
+            <div class="inputContainer">
+                <span>Collection Type: </span>
+                <select is="emby-select" class="emby-select-withcolor emby-select" data-id="collectTypeSelect">
+                    <option value="Collection">Collection</option>
+                    <option value="Playlist">Playlist</option>
+                </select>
+                <span>Whether the section references a collection or playlist</span>
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" data-id="txtCollectionName" required="required"
+                       label="Collection/Playlist Name:" />
+                <span>The name of the collection/playlist the section will use to populate.</span>
+            </div>
+            <button id="btnRmSection" is="emby-button" type="button" class="raised button block">
+                <span>Remove</span>
+            </button>
+            <hr class="solid">
+        </div>
+    </template>
+    <script type="text/javascript">
+        if (typeof CollectionSections == 'undefined') {
+            
+            const CollectionSections = {
+                pluginId: "043b2c48-b3e0-4610-b398-8217b146d1a4",
+                configurationWrapper: document.querySelector("#configurationWrapper"),
+
+                template: document.querySelector("#template-repository"),
+                btnAddSet: document.querySelector("#btnAddSection"),
+                btnSave: document.querySelector("#saveConfig"),
+
+                addSet: function (set) {
+                    const template = CollectionSections.template.cloneNode(true).content;
+                    template.querySelector("[data-id=txtUniqueId]").value = set.UniqueId || "";
+                    template.querySelector("[data-id=txtDisplayText]").value = set.DisplayText || "";
+                    template.querySelector("[data-id=txtCollectionName]").value = set.CollectionName || "";
+                    template.querySelector("[data-id=collectTypeSelect]").value = set.SectionType;
+
+                    const el = CollectionSections.configurationWrapper.appendChild(template);
+                },
+                addSetNew: function () {
+                    const set = {
+                        UniqueId: "CHANGE_ME",
+                        DisplayText: "<Section Name>",
+                        CollectionName: "",
+                        SectionType: "Collection"
+                    };
+                    CollectionSections.addSet(set);
+                },
+                rmSet: function (setEl) {
+                    setEl.remove();
+                    const configs = document.querySelectorAll("[data-id=repo-config]");
+                    console.log(configs.lenght);
+                },
+                saveConfig: function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    const config = {
+                        Sections: []
+                    };
+
+                    const configs = document.querySelectorAll("[data-id=repo-config]");
+                    for (let i = 0; i < configs.length; i++) {
+                        const repo = {
+                            UniqueId: configs[i].querySelector("[data-id=txtUniqueId]").value,
+                            DisplayText: configs[i].querySelector("[data-id=txtDisplayText]").value,
+                            CollectionName: configs[i].querySelector("[data-id=txtCollectionName]").value,
+                            SectionType: configs[i].querySelector("[data-id=collectTypeSelect]").value
+                        };
+
+                        if (repo.UniqueId == "") {
+                            continue;
+                        }
+
+                        config.Sections.push(repo);
+                    }
+
+                    window.ApiClient.updatePluginConfiguration(CollectionSections.pluginId, config)
+                        .then(Dashboard.processPluginConfigurationUpdateResult)
+                        .catch(function (error) {
+                            console.error(error);
+                        })
+                        .finally(function () {
+                            Dashboard.hideLoadingMsg();
+                        });
+                },
+                loadConfig: function () {
+                    Dashboard.showLoadingMsg();
+                    window.ApiClient.getPluginConfiguration(CollectionSections.pluginId)
+                        .then(function (config) {
+                            CollectionSections.configurationWrapper.innerHTML = "";
+                            for (let i = 0; i < config.Sections.length; i++) {
+                                CollectionSections.addSet(config.Sections[i]);
+                            }
+                        })
+                        .catch(function (error) {
+                            console.error(error);
+                        })
+                        .finally(function () {
+                            Dashboard.hideLoadingMsg();
+                        });
+                },
+                init: function () {
+                    CollectionSections.btnAddSet.addEventListener("click", CollectionSections.addSetNew);
+                    CollectionSections.btnSave.addEventListener("click", CollectionSections.saveConfig);
+                    CollectionSections.configurationWrapper.addEventListener("click", (event) => {
+                        if (event.target.id == "btnRmSection") {
+                            console.log("btnRmSection");
+                            const el = event.target.closest("[data-id=repo-config]");
+                            CollectionSections.rmSet(el);
+                        }
+                    });
+                    CollectionSections.loadConfig();
+                }
+            }
+
+            // view.addEventListener("viewshow", function (e) {
+            document.querySelector('#collectionSectionConfigurationPage').addEventListener("pageshow", function () {
+                CollectionSections.init();
+            });
+        }
+    </script>
+</div>
+</body>
+</html>
