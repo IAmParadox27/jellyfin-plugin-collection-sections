@@ -3,7 +3,6 @@ using System.Runtime.Loader;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Plugin.CollectionSections.Configuration;
-using Jellyfin.Plugin.CollectionSections.Sections;
 using Jellyfin.Plugin.HomeScreenSections.HomeScreen;
 using Jellyfin.Plugin.HomeScreenSections.HomeScreen.Sections;
 using Jellyfin.Plugin.HomeScreenSections.Library;
