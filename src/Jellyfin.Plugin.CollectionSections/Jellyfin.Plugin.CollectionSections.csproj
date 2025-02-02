@@ -23,7 +23,7 @@
       <Compile Remove="Sections\PlaylistSection.cs" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="xcopy /y /s &quot;$(TargetDir)&quot; &quot;C:\ProgramData\Jellyfin\Server\plugins\ZCollection Sections_1.0.0&quot;" />
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('C:\ProgramData\Jellyfin\Server\plugins\Collection Sections_1.0.0')">
+      <Exec Command="xcopy /y /s &quot;$(TargetDir)&quot; &quot;C:\ProgramData\Jellyfin\Server\plugins\Collection Sections_1.0.0&quot;" />
     </Target>
 </Project>
