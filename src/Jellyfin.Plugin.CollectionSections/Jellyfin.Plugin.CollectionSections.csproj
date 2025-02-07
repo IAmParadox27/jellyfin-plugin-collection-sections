@@ -10,8 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Jellyfin.Plugin.HomeScreenSections" Version="1.2.1" />
-        <PackageReference Include="Jellyfin.Plugin.Referenceable" Version="1.2.1" />
+        <PackageReference Include="Jellyfin.Plugin.HomeScreenSections" Version="1.2.2" />
+        <PackageReference Include="Jellyfin.Plugin.Referenceable" Version="1.2.2" />
     </ItemGroup>
 
     <ItemGroup>
