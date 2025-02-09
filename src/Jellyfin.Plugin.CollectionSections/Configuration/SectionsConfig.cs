@@ -8,9 +8,9 @@
     
     public class SectionsConfig
     {
-        public string UniqueId { get; set; }
-        public string DisplayText { get; set; }
-        public string CollectionName { get; set; }
+        public required string UniqueId { get; set; }
+        public required string DisplayText { get; set; }
+        public required string CollectionName { get; set; }
         public SectionType SectionType { get; set; }
     }
 }
