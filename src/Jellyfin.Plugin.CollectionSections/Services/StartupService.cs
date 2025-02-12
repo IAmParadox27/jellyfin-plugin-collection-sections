@@ -23,11 +23,11 @@ namespace Jellyfin.Plugin.CollectionSections.Services
             m_applicationPaths = applicationPaths;
         }
 
-        public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            CollectionSectionPlugin.Instance.OnConfigurationChanged(this, CollectionSectionPlugin.Instance.Configuration);
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             
-            return Task.CompletedTask;
+            CollectionSectionPlugin.Instance.OnConfigurationChanged(this, CollectionSectionPlugin.Instance.Configuration);
         }
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
