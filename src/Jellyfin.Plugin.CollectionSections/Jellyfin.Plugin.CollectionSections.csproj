@@ -18,6 +18,7 @@
     <ItemGroup>
       <None Remove="Configuration\config.html" />
       <EmbeddedResource Include="Configuration\config.html" />
+      <None Include="..\logo.png" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('C:\ProgramData\Jellyfin\Server\plugins\CollectionSections')">
