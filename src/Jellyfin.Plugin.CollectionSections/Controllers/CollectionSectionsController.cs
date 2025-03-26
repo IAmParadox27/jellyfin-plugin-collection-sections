@@ -60,7 +60,7 @@ namespace Jellyfin.Plugin.CollectionSections.Controllers
             
             items = items.Take(Math.Min(items.Count, 32)).ToList();
         
-            return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items, dtoOptions));
+            return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items, dtoOptions, user));
         }
         
         [HttpPost("Playlist")]
@@ -101,7 +101,8 @@ namespace Jellyfin.Plugin.CollectionSections.Controllers
         
             IGrouping<BaseItem, Tuple<LinkedChild, BaseItem>>[] items = groupedItems.Take(Math.Min(groupedItems.Count(), 32)).ToArray();
         
-            return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items.Select(x => x.Key).ToList(), dtoOptions));
+            User user = m_userManager.GetUserById(payload.UserId)!;
+            return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items.Select(x => x.Key).ToList(), dtoOptions, user));
         }
     }
 }
