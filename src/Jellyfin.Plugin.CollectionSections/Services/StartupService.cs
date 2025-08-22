@@ -34,7 +34,7 @@ namespace Jellyfin.Plugin.CollectionSections.Services
         {
             yield return new TaskTriggerInfo()
             {
-                Type = TaskTriggerInfo.TriggerStartup
+                Type = TaskTriggerInfoType.StartupTrigger
             };
         }
     }
