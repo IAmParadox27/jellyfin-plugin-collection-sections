@@ -7,11 +7,12 @@
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <AssemblyName>Jellyfin.Plugin.CollectionSections</AssemblyName>
         <Version>2.2.0.0</Version>
+        <JellyfinVersion>10.11.0-rc5</JellyfinVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Jellyfin.Model" Version="10.11.0-rc5" />
-        <PackageReference Include="Jellyfin.Controller" Version="10.11.0-rc5" />
+        <PackageReference Include="Jellyfin.Model" Version="$(JellyfinVersion)" />
+        <PackageReference Include="Jellyfin.Controller" Version="$(JellyfinVersion)" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
