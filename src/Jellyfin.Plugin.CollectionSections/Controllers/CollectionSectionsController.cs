@@ -1,5 +1,4 @@
-﻿using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Plugin.CollectionSections.Extensions;
+﻿using Jellyfin.Plugin.CollectionSections.Extensions;
 using Jellyfin.Plugin.CollectionSections.Model;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
