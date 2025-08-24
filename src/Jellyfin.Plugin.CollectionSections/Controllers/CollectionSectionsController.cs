@@ -1,5 +1,4 @@
-﻿using Jellyfin.Data.Entities;
-using Jellyfin.Plugin.CollectionSections.Extensions;
+﻿using Jellyfin.Plugin.CollectionSections.Extensions;
 using Jellyfin.Plugin.CollectionSections.Model;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
@@ -56,7 +55,7 @@ namespace Jellyfin.Plugin.CollectionSections.Controllers
             BoxSet? collection = m_collectionManager.GetCollections(user)
                 .FirstOrDefault(x => x.Name == payload.AdditionalData);
         
-            List<BaseItem> items =  collection?.GetChildren(user, true) ?? new List<BaseItem>();
+            List<BaseItem> items =  collection?.GetChildren(user, true).ToList() ?? new List<BaseItem>();
             
             items = items.Take(Math.Min(items.Count, 32)).ToList();
         

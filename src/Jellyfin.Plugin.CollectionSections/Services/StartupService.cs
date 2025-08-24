@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using Jellyfin.Plugin.CollectionSections.JellyfinVersionSpecific;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Tasks;
 
@@ -30,12 +31,6 @@ namespace Jellyfin.Plugin.CollectionSections.Services
             CollectionSectionPlugin.Instance.OnConfigurationChanged(this, CollectionSectionPlugin.Instance.Configuration);
         }
 
-        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
-        {
-            yield return new TaskTriggerInfo()
-            {
-                Type = TaskTriggerInfo.TriggerStartup
-            };
-        }
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => StartupServiceHelper.GetDefaultTriggers();
     }
 }
