@@ -43,6 +43,11 @@
                 <span>The heading that will display on the home screen.</span>
             </div>
             <div class="inputContainer">
+                <input is="emby-input" type="text" data-id="txtDescription"
+                       label="Description (Optional):" />
+                <span>A description for this section that will appear to users in the settings.</span>
+            </div>
+            <div class="inputContainer">
                 <span>Collection Type: </span>
                 <select is="emby-select" class="emby-select-withcolor emby-select" data-id="collectTypeSelect">
                     <option value="Collection">Collection</option>
@@ -76,6 +81,7 @@
                     const template = CollectionSections.template.cloneNode(true).content;
                     template.querySelector("[data-id=txtUniqueId]").value = set.UniqueId || "";
                     template.querySelector("[data-id=txtDisplayText]").value = set.DisplayText || "";
+                    template.querySelector("[data-id=txtDescription]").value = set.Description || "";
                     template.querySelector("[data-id=txtCollectionName]").value = set.CollectionName || "";
                     template.querySelector("[data-id=collectTypeSelect]").value = set.SectionType;
 
@@ -85,8 +91,10 @@
                     const set = {
                         UniqueId: "CHANGE_ME",
                         DisplayText: "<Section Name>",
+                        Description: "",
                         CollectionName: "",
-                        SectionType: "Collection"
+                        SectionType: "Collection",
+                        EnableByDefault: true
                     };
                     CollectionSections.addSet(set);
                 },
@@ -107,6 +115,7 @@
                         const repo = {
                             UniqueId: configs[i].querySelector("[data-id=txtUniqueId]").value,
                             DisplayText: configs[i].querySelector("[data-id=txtDisplayText]").value,
+                            Description: configs[i].querySelector("[data-id=txtDescription]").value,
                             CollectionName: configs[i].querySelector("[data-id=txtCollectionName]").value,
                             SectionType: configs[i].querySelector("[data-id=collectTypeSelect]").value
                         };
