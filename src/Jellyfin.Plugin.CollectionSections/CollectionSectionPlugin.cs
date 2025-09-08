@@ -37,9 +37,9 @@ namespace Jellyfin.Plugin.CollectionSections
         /// <summary>
         /// Waits for Home Screen plugin readiness with exponential backoff.
         /// </summary>
-        private async Task<(bool success, int elapsedSeconds)> WaitForHomeScreenReady(HttpClient client, int maxAttempts = 20, int initialDelayMs = 1000)
+        private async Task<(bool success, int elapsedSeconds)> WaitForHomeScreenReady(HttpClient client, int maxAttempts = 60, int intervalSeconds = 5)
         {
-            int totalDelayMs = 0;
+            int totalDelaySeconds = 0;
 
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
@@ -49,7 +49,7 @@ namespace Jellyfin.Plugin.CollectionSections
                     if (response.IsSuccessStatusCode)
                     {
                         m_logger.LogInformation($"Home Screen plugin ready (attempt {attempt})");
-                        return (true, Convert.ToInt32(totalDelayMs / 1000.0));
+                        return (true, totalDelaySeconds);
                     }
 
                     m_logger.LogDebug($"Home Screen not ready (attempt {attempt}/{maxAttempts}): {response.StatusCode}");
@@ -59,13 +59,11 @@ namespace Jellyfin.Plugin.CollectionSections
                     m_logger.LogDebug($"Readiness check failed (attempt {attempt}/{maxAttempts}): {ex.Message}");
                 }
 
-                // Exponential backoff: 1s → 20s max
-                int delayMs = Math.Min(initialDelayMs * (1 << (attempt - 1)), 20000);
-                totalDelayMs += delayMs;
-                await Task.Delay(delayMs);
+                totalDelaySeconds += intervalSeconds;
+                await Task.Delay(intervalSeconds * 1000);
             }
 
-            return (false, Convert.ToInt32(totalDelayMs / 1000.0));
+            return (false, totalDelaySeconds);
         }
 
         internal async void OnConfigurationChanged(object? sender, BasePluginConfiguration e)
