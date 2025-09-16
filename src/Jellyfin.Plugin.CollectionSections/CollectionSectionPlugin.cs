@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Reflection;
+using System.Runtime.Loader;
 using Jellyfin.Plugin.CollectionSections.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
@@ -83,6 +84,7 @@ namespace Jellyfin.Plugin.CollectionSections
                     return;
                 }
 
+                List<JObject> payloads = new List<JObject>();
                 foreach (SectionsConfig section in pluginConfiguration.Sections)
                 {
                     JObject jsonPayload = new JObject();
@@ -91,15 +93,19 @@ namespace Jellyfin.Plugin.CollectionSections
                     jsonPayload.Add("limit", 1);
                     jsonPayload.Add("additionalData", section.CollectionName);
 
+                    jsonPayload.Add("resultsAssembly", GetType().Assembly.FullName);
+                    jsonPayload.Add("resultsClass", typeof(ResultsHandler).FullName);
                     if (section.SectionType == SectionType.Collection)
                     {
-                        jsonPayload.Add("resultsEndpoint", "/CollectionSections/Collection");
+                        jsonPayload.Add("resultsMethod", nameof(ResultsHandler.GetCollectionResults));
                     }
                     else if (section.SectionType == SectionType.Playlist)
                     {
-                        jsonPayload.Add("resultsEndpoint", "/CollectionSections/Playlist");
+                        jsonPayload.Add("resultsMethod", nameof(ResultsHandler.GetPlaylistResults));
                     }
-
+                    
+                    payloads.Add(jsonPayload);
+                    
                     try
                     {
                         var response = await client.PostAsync("/HomeScreen/RegisterSection",
@@ -117,9 +123,31 @@ namespace Jellyfin.Plugin.CollectionSections
                     }
                     catch (Exception ex)
                     {
-                        m_logger.LogError(ex, $"Caught exception when attempting to register section with HomeScreenSections plugin. Ensure you have `Home Screen Sections` installed on your server.");
-                        return;
                     }
+                }
+                
+                
+                Assembly? homeScreenSectionsAssembly =
+                    AssemblyLoadContext.All.SelectMany(x => x.Assemblies).FirstOrDefault(x =>
+                        x.FullName?.Contains(".HomeScreenSections") ?? false);
+
+                if (homeScreenSectionsAssembly == null)
+                {
+                    m_logger.LogError($"Couldn't find Home Screen Sections assembly when attempting to register section. Ensure you have `Home Screen Sections` installed on your server.");
+                    return;
+                }
+
+                Type? pluginInterfaceType = homeScreenSectionsAssembly.GetType("Jellyfin.Plugin.HomeScreenSections.PluginInterface");
+
+                if (pluginInterfaceType == null)
+                {
+                    m_logger.LogError($"Couldn't find PluginInterface type in Home Screen Sections plugin when attempting to register section. Ensure you have the latest version of `Home Screen Sections` installed on your server.");
+                    return;
+                }
+
+                foreach (JObject payload in payloads)
+                {
+                    pluginInterfaceType.GetMethod("RegisterSection")?.Invoke(null, new object?[] { payload });
                 }
             }
         }
