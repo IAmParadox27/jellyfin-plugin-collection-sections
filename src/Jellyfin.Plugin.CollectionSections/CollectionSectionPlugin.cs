@@ -71,19 +71,6 @@ namespace Jellyfin.Plugin.CollectionSections
         {
             if (e is PluginConfiguration pluginConfiguration)
             {
-                string? publishedServerUrl = m_serverApplicationHost.GetType()
-                    .GetProperty("PublishedServerUrl", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(m_serverApplicationHost) as string;
-
-                HttpClient client = new HttpClient();
-                client.BaseAddress = new Uri(publishedServerUrl ?? $"http://localhost:{m_serverApplicationHost.HttpPort}");
-
-                var (success, elapsedSeconds) = await WaitForHomeScreenReady(client);
-                if (!success)
-                {
-                    m_logger.LogError($"Home Screen plugin not ready after {elapsedSeconds}s. Cannot register sections.");
-                    return;
-                }
-
                 List<JObject> payloads = new List<JObject>();
                 foreach (SectionsConfig section in pluginConfiguration.Sections)
                 {
@@ -105,9 +92,23 @@ namespace Jellyfin.Plugin.CollectionSections
                     }
                     
                     payloads.Add(jsonPayload);
+                    continue;
                     
                     try
                     {
+                        string? publishedServerUrl = m_serverApplicationHost.GetType()
+                            .GetProperty("PublishedServerUrl", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(m_serverApplicationHost) as string;
+
+                        HttpClient client = new HttpClient();
+                        client.BaseAddress = new Uri(publishedServerUrl ?? $"http://localhost:{m_serverApplicationHost.HttpPort}");
+
+                        var (success, elapsedSeconds) = await WaitForHomeScreenReady(client);
+                        if (!success)
+                        {
+                            m_logger.LogError($"Home Screen plugin not ready after {elapsedSeconds}s. Cannot register sections.");
+                            return;
+                        }
+
                         var response = await client.PostAsync("/HomeScreen/RegisterSection",
                             new StringContent(jsonPayload.ToString(Formatting.None),
                                 MediaTypeHeaderValue.Parse("application/json")));
@@ -147,6 +148,7 @@ namespace Jellyfin.Plugin.CollectionSections
 
                 foreach (JObject payload in payloads)
                 {
+                    m_logger.LogInformation($"Registering section '{payload["displayText"]}'");
                     pluginInterfaceType.GetMethod("RegisterSection")?.Invoke(null, new object?[] { payload });
                 }
             }
