@@ -55,7 +55,7 @@ namespace Jellyfin.Plugin.CollectionSections.Controllers
             BoxSet? collection = m_collectionManager.GetCollections(user)
                 .FirstOrDefault(x => x.Name == payload.AdditionalData);
         
-            List<BaseItem> items =  collection?.GetChildren(user, true).ToList() ?? new List<BaseItem>();
+            List<BaseItem> items =  collection?.GetChildren(user, true, null).ToList() ?? new List<BaseItem>();
             
             items = items.Take(Math.Min(items.Count, 32)).ToList();
         
