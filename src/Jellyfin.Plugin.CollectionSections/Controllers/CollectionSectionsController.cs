@@ -11,6 +11,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Mvc;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Jellyfin.Plugin.CollectionSections.Controllers
 {

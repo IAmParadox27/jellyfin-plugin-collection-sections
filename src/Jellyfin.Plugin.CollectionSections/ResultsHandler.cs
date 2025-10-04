@@ -12,6 +12,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Jellyfin.Plugin.CollectionSections
 {
@@ -67,7 +68,7 @@ namespace Jellyfin.Plugin.CollectionSections
                 .FirstOrDefault(x => x.Name == payload.AdditionalData);
             m_logger.LogInformation($"{payload.AdditionalData} - Collection: {timer.ElapsedMilliseconds}ms");
         
-            List<BaseItem> items =  collection?.GetChildren(user, true).ToList() ?? new List<BaseItem>();
+            List<BaseItem> items =  collection?.GetChildren(user, true, null).ToList() ?? new List<BaseItem>();
             
             m_logger.LogInformation($"{payload.AdditionalData} - Children: {timer.ElapsedMilliseconds}ms");
             items = items.Take(Math.Min(items.Count, 16)).ToList();
