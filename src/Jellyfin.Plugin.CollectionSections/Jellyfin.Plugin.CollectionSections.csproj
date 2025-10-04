@@ -41,7 +41,7 @@
         <Compile Remove="JellyfinVersionSpecific/10.11.0/*.cs" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('C:\ProgramData\Jellyfin\Server\plugins\CollectionSections')">
         <Exec Condition="'$(JellyfinVersion)' == '10.11.0-rc8'" Command="xcopy $(TargetDir) &quot;C:\ProgramData\Jellyfin\Server\plugins\CollectionSections&quot; /y" />
         <Exec Condition="'$(JellyfinVersion)' == '10.10.7'"     Command="xcopy $(TargetDir) &quot;C:\ProgramData\Jellyfin\Server_10_10_7\plugins\CollectionSections&quot; /y" />
     </Target>
