@@ -110,8 +110,9 @@ namespace Jellyfin.Plugin.CollectionSections
                 .FirstOrDefault(x => x.Name == payload.AdditionalData);
             m_logger.LogInformation($"{payload.AdditionalData} - Playlist: {timer.ElapsedMilliseconds}ms");
 
-            IEnumerable<Tuple<LinkedChild, BaseItem>> itemsRaw = playlist?.GetManageableItems()
-                .Where(i => i.Item2.IsVisible(m_userManager.GetUserById(payload.UserId))) ?? Enumerable.Empty<Tuple<LinkedChild, BaseItem>>();
+            Tuple<LinkedChild, BaseItem>[] itemsRaw = playlist?.GetManageableItems()
+                .Where(i => i.Item2.IsVisible(m_userManager.GetUserById(payload.UserId)))
+                .ToArray() ?? Array.Empty<Tuple<LinkedChild, BaseItem>>();
 
             m_logger.LogInformation($"{payload.AdditionalData} - Items: {timer.ElapsedMilliseconds}ms");
             IGrouping<BaseItem, Tuple<LinkedChild, BaseItem>>[] groupedItems = itemsRaw.GroupBy(x =>
