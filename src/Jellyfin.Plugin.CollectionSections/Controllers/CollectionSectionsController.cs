@@ -1,4 +1,5 @@
-﻿using Jellyfin.Plugin.CollectionSections.Extensions;
+﻿using Jellyfin.Plugin.CollectionSections.Configuration;
+using Jellyfin.Plugin.CollectionSections.Extensions;
 using Jellyfin.Plugin.CollectionSections.Model;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
@@ -57,8 +58,10 @@ namespace Jellyfin.Plugin.CollectionSections.Controllers
                 .FirstOrDefault(x => x.Name == payload.AdditionalData);
         
             List<BaseItem> items =  collection?.GetChildren(user, true, null).ToList() ?? new List<BaseItem>();
-            
-            items = items.Take(Math.Min(items.Count, 32)).ToList();
+
+            int maxItems = CollectionSectionPlugin.Instance?.Configuration.Sections
+                .FirstOrDefault(x => x.SectionType == SectionType.Collection && x.CollectionName == payload.AdditionalData)?.MaxItems ?? 32;
+            items = items.Take(Math.Min(items.Count, maxItems)).ToList();
         
             return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items, dtoOptions, user));
         }
@@ -99,7 +102,9 @@ namespace Jellyfin.Plugin.CollectionSections.Controllers
                 return x.Item2;
             });
         
-            IGrouping<BaseItem, Tuple<LinkedChild, BaseItem>>[] items = groupedItems.Take(Math.Min(groupedItems.Count(), 32)).ToArray();
+            int maxItems = CollectionSectionPlugin.Instance?.Configuration.Sections
+                .FirstOrDefault(x => x.SectionType == SectionType.Playlist && x.CollectionName == payload.AdditionalData)?.MaxItems ?? 32;
+            IGrouping<BaseItem, Tuple<LinkedChild, BaseItem>>[] items = groupedItems.Take(Math.Min(groupedItems.Count(), maxItems)).ToArray();
         
             User user = m_userManager.GetUserById(payload.UserId)!;
             return new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items.Select(x => x.Key).ToList(), dtoOptions, user));
