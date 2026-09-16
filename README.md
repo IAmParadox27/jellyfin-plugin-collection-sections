@@ -12,6 +12,12 @@
 	</a>
 </p>
 
+## Development Update - 16th September 2026
+
+Hey, just a quick update relating to Collection Sections. My original vision for the Home Screen Sections ecosystem was that developers would utilise the exposed functionality to add their own ideas for sections. This hasn't come fully to pass, instead HSS has grown considerably from its initial intent, and now houses sections that I could never have dreamed of existing when I first publicised the plugin. As a result, I think it makes the most sense that the functionality provided by this plugin gets moved into HSS, which I will be doing in a future update soon. 
+
+I don't know exactly when this will be just yet, but rest assured you won't be without Collection Sections in JF 12 for long. It's coming. I just wanted to post a little update here explaining my plan and the future of the plugin.
+
 ## Development Update - 20th August 2025
 
 Hey all! Things are changing with my plugins are more and more people start to use them and report issues. In order to make it easier for me to manage I'm splitting bugs and features into different areas. For feature requests please head over to <a href="https://features.iamparadox.dev/">https://features.iamparadox.dev/</a> where you'll be able to signin with GitHub and make a feature request. For bugs please report them on the relevant GitHub repo and they will be added to the <a href="https://github.com/users/IAmParadox27/projects/1/views/1">project board</a> when I've seen them. I've found myself struggling to know when issues are made and such recently so I'm also planning to create a system that will monitor a particular view for new issues that come up and send me a notification which should hopefully allow me to keep more up to date and act faster on various issues.
