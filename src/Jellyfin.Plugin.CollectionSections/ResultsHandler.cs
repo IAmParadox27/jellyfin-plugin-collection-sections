@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Jellyfin.Plugin.CollectionSections.Configuration;
 using Jellyfin.Plugin.CollectionSections.Extensions;
 using Jellyfin.Plugin.CollectionSections.Model;
 using MediaBrowser.Controller.Collections;
@@ -71,7 +72,9 @@ namespace Jellyfin.Plugin.CollectionSections
             List<BaseItem> items =  collection?.GetChildren(user, true, null).ToList() ?? new List<BaseItem>();
             
             m_logger.LogInformation($"{payload.AdditionalData} - Children: {timer.ElapsedMilliseconds}ms");
-            items = items.Take(Math.Min(items.Count, 16)).ToList();
+            int maxItems = CollectionSectionPlugin.Instance?.Configuration.Sections
+                .FirstOrDefault(x => x.SectionType == SectionType.Collection && x.CollectionName == payload.AdditionalData)?.MaxItems ?? 16;
+            items = items.Take(Math.Min(items.Count, maxItems)).ToList();
             m_logger.LogInformation($"{payload.AdditionalData} - ToList: {timer.ElapsedMilliseconds}ms");
         
             var results = new QueryResult<BaseItemDto>(m_dtoService.GetBaseItemDtos(items, dtoOptions, user));
@@ -125,8 +128,10 @@ namespace Jellyfin.Plugin.CollectionSections
                 return x.Item2;
             }).ToArray();
             m_logger.LogInformation($"{payload.AdditionalData} - Grouping: {timer.ElapsedMilliseconds}ms");
-        
-            IGrouping<BaseItem, Tuple<LinkedChild, BaseItem>>[] items = groupedItems.Take(Math.Min(groupedItems.Count(), 16)).ToArray();
+
+            int maxItems = CollectionSectionPlugin.Instance?.Configuration.Sections
+                .FirstOrDefault(x => x.SectionType == SectionType.Playlist && x.CollectionName == payload.AdditionalData)?.MaxItems ?? 16;
+            IGrouping<BaseItem, Tuple<LinkedChild, BaseItem>>[] items = groupedItems.Take(Math.Min(groupedItems.Count(), maxItems)).ToArray();
             m_logger.LogInformation($"{payload.AdditionalData} - Limit: {timer.ElapsedMilliseconds}ms");
         
             User user = m_userManager.GetUserById(payload.UserId)!;

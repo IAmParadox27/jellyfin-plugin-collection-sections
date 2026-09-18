@@ -55,6 +55,11 @@
                        label="Collection/Playlist Name:" />
                 <span>The name of the collection/playlist the section will use to populate.</span>
             </div>
+            <div class="inputContainer">
+                <input is="emby-input" type="number" min="1" data-id="txtMaxItems" required="required"
+                       label="Max Items:" />
+                <span>The maximum number of items to show in this section. Defaults to 16.</span>
+            </div>
             <button id="btnRmSection" is="emby-button" type="button" class="raised button block">
                 <span>Remove</span>
             </button>
@@ -78,6 +83,7 @@
                     template.querySelector("[data-id=txtDisplayText]").value = set.DisplayText || "";
                     template.querySelector("[data-id=txtCollectionName]").value = set.CollectionName || "";
                     template.querySelector("[data-id=collectTypeSelect]").value = set.SectionType;
+                    template.querySelector("[data-id=txtMaxItems]").value = set.MaxItems || 16;
 
                     const el = CollectionSections.configurationWrapper.appendChild(template);
                 },
@@ -86,7 +92,8 @@
                         UniqueId: "CHANGE_ME",
                         DisplayText: "<Section Name>",
                         CollectionName: "",
-                        SectionType: "Collection"
+                        SectionType: "Collection",
+                        MaxItems: 16
                     };
                     CollectionSections.addSet(set);
                 },
@@ -108,7 +115,8 @@
                             UniqueId: configs[i].querySelector("[data-id=txtUniqueId]").value,
                             DisplayText: configs[i].querySelector("[data-id=txtDisplayText]").value,
                             CollectionName: configs[i].querySelector("[data-id=txtCollectionName]").value,
-                            SectionType: configs[i].querySelector("[data-id=collectTypeSelect]").value
+                            SectionType: configs[i].querySelector("[data-id=collectTypeSelect]").value,
+                            MaxItems: parseInt(configs[i].querySelector("[data-id=txtMaxItems]").value, 10) || 16
                         };
 
                         if (repo.UniqueId == "") {

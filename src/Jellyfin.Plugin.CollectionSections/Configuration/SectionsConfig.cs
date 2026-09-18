@@ -12,5 +12,6 @@
         public required string DisplayText { get; set; }
         public required string CollectionName { get; set; }
         public SectionType SectionType { get; set; }
+        public int MaxItems { get; set; } = 16;
     }
 }
