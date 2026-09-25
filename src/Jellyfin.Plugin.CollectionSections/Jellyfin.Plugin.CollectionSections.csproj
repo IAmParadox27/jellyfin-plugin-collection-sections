@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <JellyfinVersion>10.11.2</JellyfinVersion>
+        <JellyfinVersion>12.0.0</JellyfinVersion>
         <JellyfinNugetVersion Condition="!$(JellyfinVersion.StartsWith('10.11'))">$(JellyfinVersion)</JellyfinNugetVersion>
         <JellyfinNugetVersion Condition="$(JellyfinVersion.StartsWith('10.11'))">$(JellyfinVersion)</JellyfinNugetVersion>
         <JellyfinNugetVersion Condition="'$(JellyfinVersion)' == '10.11.1'">10.11.0</JellyfinNugetVersion>
@@ -9,6 +9,7 @@
         <JellyfinNugetVersion Condition="'$(JellyfinVersion)' == '10.11.10'">10.11.9</JellyfinNugetVersion>
         <TargetFramework Condition="$(JellyfinVersion.StartsWith('10.11'))">net9.0</TargetFramework>
         <TargetFramework Condition="'$(JellyfinVersion)' == '10.10.7'">net8.0</TargetFramework>
+        <TargetFramework Condition="$(JellyfinVersion.StartsWith('12.'))">net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -52,4 +53,11 @@
         <Exec Condition="$(JellyfinVersion.StartsWith('10.11'))" Command="xcopy $(TargetDir) &quot;C:\ProgramData\Jellyfin\Server_10_11\plugins\CollectionSections&quot; /y" />
         <Exec Condition="'$(JellyfinVersion)' == '10.10.7'"     Command="xcopy $(TargetDir) &quot;C:\ProgramData\Jellyfin\Server_10_10_7\plugins\CollectionSections&quot; /y" />
     </Target>
+
+    <!-- Remove 12.x Specific Code from non 12.x builds -->
+    <ItemGroup Condition="!$(JellyfinVersion.StartsWith('12.'))">
+        <None Include="JellyfinVersionSpecific/12.x/*.cs" />
+        <Compile Remove="JellyfinVersionSpecific/12.x/*.cs" />
+    </ItemGroup>
+
 </Project>
