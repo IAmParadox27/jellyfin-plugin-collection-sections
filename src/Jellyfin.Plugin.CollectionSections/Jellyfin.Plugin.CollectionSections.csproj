@@ -1,19 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <JellyfinVersion>10.11.2</JellyfinVersion>
+        <JellyfinVersion>12.2.0</JellyfinVersion>
         <JellyfinNugetVersion Condition="!$(JellyfinVersion.StartsWith('10.11'))">$(JellyfinVersion)</JellyfinNugetVersion>
         <JellyfinNugetVersion Condition="$(JellyfinVersion.StartsWith('10.11'))">$(JellyfinVersion)</JellyfinNugetVersion>
         <JellyfinNugetVersion Condition="'$(JellyfinVersion)' == '10.11.1'">10.11.0</JellyfinNugetVersion>
         <JellyfinNugetVersion Condition="$(JellyfinVersion.StartsWith('10.11.0'))">10.11.0</JellyfinNugetVersion>
         <JellyfinNugetVersion Condition="'$(JellyfinVersion)' == '10.11.10'">10.11.9</JellyfinNugetVersion>
+        <TargetFramework Condition="$(JellyfinVersion.StartsWith('12.'))">net10.0</TargetFramework>
         <TargetFramework Condition="$(JellyfinVersion.StartsWith('10.11'))">net9.0</TargetFramework>
         <TargetFramework Condition="'$(JellyfinVersion)' == '10.10.7'">net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <AssemblyName>Jellyfin.Plugin.CollectionSections</AssemblyName>
-        <Version>2.3.0.0</Version>
+        <Version>3.0.0.0</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -46,6 +47,12 @@
     <ItemGroup Condition="'$(JellyfinNugetVersion)' != '10.11.9' AND '$(JellyfinNugetVersion)' != '10.11.11'">
         <None Include="JellyfinVersionSpecific/10.11.9/*.cs" />
         <Compile Remove="JellyfinVersionSpecific/10.11.9/*.cs" />
+    </ItemGroup>
+
+    <!-- Remove 12.x Specific Code from non 12.x builds -->
+    <ItemGroup Condition="!$(JellyfinVersion.StartsWith('12.'))">
+        <None Include="JellyfinVersionSpecific/12.x/*.cs" />
+        <Compile Remove="JellyfinVersionSpecific/12.x/*.cs" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('C:\ProgramData\Jellyfin\Server_10_11\plugins\CollectionSections')">
