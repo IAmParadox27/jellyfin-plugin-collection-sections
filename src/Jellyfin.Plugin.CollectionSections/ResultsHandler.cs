@@ -64,7 +64,9 @@ namespace Jellyfin.Plugin.CollectionSections
             
             LibraryCache.CachedCollections.TryGetValue(user.Id, out List<BoxSet>? collections);
             
-            BoxSet? collection = collections?.FirstOrDefault(x => x.Name == payload.AdditionalData) ?? m_collectionManager.GetCollections(user)
+            // The cache only finds the collection quickly. Its instance is from startup, so its children can be out of date.
+            BoxSet? cachedCollection = collections?.FirstOrDefault(x => x.Name == payload.AdditionalData);
+            BoxSet? collection = (cachedCollection != null ? m_libraryManager.GetItemById(cachedCollection.Id) as BoxSet : null) ?? m_collectionManager.GetCollections(user)
                 .FirstOrDefault(x => x.Name == payload.AdditionalData);
             m_logger.LogInformation($"{payload.AdditionalData} - Collection: {timer.ElapsedMilliseconds}ms");
         
@@ -106,7 +108,9 @@ namespace Jellyfin.Plugin.CollectionSections
             
             LibraryCache.CachedPlaylists.TryGetValue(payload.UserId, out List<Playlist>? playlists);
             
-            Playlist? playlist = playlists?.FirstOrDefault(x => x.Name == payload.AdditionalData) ?? m_playlistManager.GetPlaylists(payload.UserId)
+            // The cache only finds the playlist quickly. Its instance is from startup, so its items can be out of date.
+            Playlist? cachedPlaylist = playlists?.FirstOrDefault(x => x.Name == payload.AdditionalData);
+            Playlist? playlist = (cachedPlaylist != null ? m_libraryManager.GetItemById(cachedPlaylist.Id) as Playlist : null) ?? m_playlistManager.GetPlaylists(payload.UserId)
                 .FirstOrDefault(x => x.Name == payload.AdditionalData);
             m_logger.LogInformation($"{payload.AdditionalData} - Playlist: {timer.ElapsedMilliseconds}ms");
 
